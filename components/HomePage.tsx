@@ -56,12 +56,12 @@ export default function HomePage() {
 	]);
 	const [inputValue, setInputValue] = useState("");
 	const [selectedEvent, setSelectedEvent] = useState(null);
-	const scrollAreaRef = useRef(null); // Add ref for ScrollArea
+	const scrollAreaRef = useRef<any>(null); // Add ref for ScrollArea
 
 	// Auto-scroll to bottom when messages change
 	useEffect(() => {
 		if (scrollAreaRef.current) {
-			const scrollContainer = scrollAreaRef.current.querySelector(
+			const scrollContainer = scrollAreaRef?.current.querySelector(
 				"[data-radix-scroll-area-viewport]",
 			);
 			if (scrollContainer) {
@@ -115,7 +115,7 @@ export default function HomePage() {
 		setInputValue("");
 	};
 
-	const handleSelectEvent = (event) => {
+	const handleSelectEvent = (event: any) => {
 		setSelectedEvent(event);
 		const eventMessage = {
 			id: messages.length + 1,
@@ -125,7 +125,7 @@ export default function HomePage() {
 		setMessages((prev) => [...prev, eventMessage]);
 	};
 
-	const handleKeyPress = (e) => {
+	const handleKeyPress = (e: any) => {
 		if (e.key === "Enter") {
 			handleSendMessage();
 		}

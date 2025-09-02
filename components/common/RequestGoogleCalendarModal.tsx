@@ -9,25 +9,74 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 import { Settings } from "lucide-react";
-import { requestGoogleCalendarAccess } from "@/lib/auth-client";
 
-// probably pass in the account object here for faster rendering
-export default function GoogleAuthModal() {
+interface GoogleAuthModalProps {
+	onAuthSuccess?: () => void;
+}
+
+export default function GoogleAuthModal({
+	onAuthSuccess,
+}: GoogleAuthModalProps) {
 	const [showModal, setShowModal] = useState(false);
 	const [hasAccessToken, setHasAccessToken] = useState(false);
+	const [isAuthenticating, setIsAuthenticating] = useState(false);
 
+	// Check for access token on component mount
 	useEffect(() => {
-		const checkAccessToken = () => {
-			// Replace this with your actual token check logic
-			const hasToken = true; // Your token check logic here
-			setHasAccessToken(hasToken);
-			if (!hasToken) {
+		const checkAccessToken = async () => {
+			try {
+				const response = await fetch("/api/auth/check-token");
+
+				if (response.ok) {
+					const { hasToken, needsRefresh, needsReauth } = await response.json();
+					setHasAccessToken(hasToken);
+
+					// Show modal if no token, needs refresh, or needs reauth
+					if (!hasToken || needsRefresh || needsReauth) {
+						setShowModal(true);
+					}
+				} else {
+					// If API call fails, assume no token and show modal
+					setHasAccessToken(false);
+					setShowModal(true);
+				}
+			} catch (error) {
+				console.error("Error checking access token:", error);
+				// On error, assume no token and show modal
+				setHasAccessToken(false);
 				setShowModal(true);
 			}
 		};
 
 		checkAccessToken();
 	}, []);
+
+	const handleGoogleAuth = async () => {
+		setIsAuthenticating(true);
+
+		try {
+			// Import the function dynamically to avoid SSR issues
+			const { requestGoogleCalendarAccess } = await import("@/lib/auth-client");
+
+			await requestGoogleCalendarAccess();
+
+			// After successful auth, recheck token status
+			const response = await fetch("/api/auth/check-token");
+			if (response.ok) {
+				const { hasToken } = await response.json();
+				if (hasToken) {
+					setHasAccessToken(true);
+					setShowModal(false);
+					onAuthSuccess?.(); // Call optional callback
+				}
+			}
+		} catch (error) {
+			console.error("Error during Google authentication:", error);
+			// You might want to show an error message to the user here
+		} finally {
+			setIsAuthenticating(false);
+		}
+	};
 
 	return (
 		<Dialog open={showModal}>
@@ -52,10 +101,11 @@ export default function GoogleAuthModal() {
 						</ul>
 					</div>
 					<Button
-						onClick={requestGoogleCalendarAccess}
-						className="w-full bg-blue-600 hover:bg-blue-700"
+						onClick={handleGoogleAuth}
+						disabled={isAuthenticating}
+						className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
 					>
-						Connect Google Calendar
+						{isAuthenticating ? "Connecting..." : "Connect Google Calendar"}
 					</Button>
 				</div>
 			</DialogContent>
