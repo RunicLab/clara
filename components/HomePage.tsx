@@ -76,6 +76,7 @@ export default function HomePage() {
 				const response = await fetch("/api/calendar/events");
 				const data = await response.json();
 				if (response.ok && data.events.length > 0) {
+					console.log(data.events);
 					setEvents(data.events);
 				}
 			} catch (error) {
