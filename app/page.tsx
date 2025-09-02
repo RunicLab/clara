@@ -1,4 +1,5 @@
 import AuthPage from "@/components/AuthPage";
+import GoogleAuthModal from "@/components/common/RequestGoogleCalendarModal";
 import HomePage from "@/components/HomePage";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
@@ -14,6 +15,7 @@ export default async function Home() {
 
 	return (
 		<>
+			<GoogleAuthModal />
 			<HomePage />;
 		</>
 	);
