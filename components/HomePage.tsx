@@ -9,6 +9,7 @@ import { Send, CalendarDays, MessageSquare } from "lucide-react";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import { format, parse, startOfWeek, getDay } from "date-fns";
 import { enUS } from "date-fns/locale";
+import { useRef, useEffect } from "react";
 
 const locales = {
 	"en-US": enUS,
@@ -55,6 +56,19 @@ export default function HomePage() {
 	]);
 	const [inputValue, setInputValue] = useState("");
 	const [selectedEvent, setSelectedEvent] = useState(null);
+	const scrollAreaRef = useRef(null); // Add ref for ScrollArea
+
+	// Auto-scroll to bottom when messages change
+	useEffect(() => {
+		if (scrollAreaRef.current) {
+			const scrollContainer = scrollAreaRef.current.querySelector(
+				"[data-radix-scroll-area-viewport]",
+			);
+			if (scrollContainer) {
+				scrollContainer.scrollTop = scrollContainer.scrollHeight;
+			}
+		}
+	}, [messages]);
 
 	const handleSendMessage = () => {
 		if (!inputValue.trim()) return;
@@ -140,14 +154,14 @@ export default function HomePage() {
 								</CardTitle>
 							</CardHeader>
 							<CardContent className="h-full pb-4">
-								<div className="h-[calc(100%-2rem)]">
+								<div className="h-[calc(100%-2rem)] max-h-[70vh] overflow-y-auto">
 									<Calendar
 										localizer={localizer}
 										events={events}
 										startAccessor="start"
 										endAccessor="end"
 										onSelectEvent={handleSelectEvent}
-										style={{ height: "100%" }}
+										style={{ height: "100%", minHeight: "400px" }}
 										views={["month", "week", "day"]}
 										popup
 										eventPropGetter={(event) => ({
@@ -175,7 +189,10 @@ export default function HomePage() {
 							</CardHeader>
 							<CardContent className="flex-1 flex flex-col p-0">
 								{/* Messages Area */}
-								<ScrollArea className="flex-1 p-4">
+								<ScrollArea
+									ref={scrollAreaRef}
+									className="flex-1 p-4 max-h-[calc(100%-80px)]"
+								>
 									<div className="space-y-4">
 										{messages.map((message) => (
 											<div

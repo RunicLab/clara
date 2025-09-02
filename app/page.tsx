@@ -12,5 +12,9 @@ export default async function Home() {
 		return <AuthPage />;
 	}
 
-	return <HomePage />;
+	return (
+		<>
+			<HomePage />;
+		</>
+	);
 }
