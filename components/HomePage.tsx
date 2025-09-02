@@ -76,8 +76,12 @@ export default function HomePage() {
 				const response = await fetch("/api/calendar/events");
 				const data = await response.json();
 				if (response.ok && data.events.length > 0) {
-					console.log(data.events);
-					setEvents(data.events);
+					const formattedEvents = data.events.map((event: any) => ({
+						...event,
+						start: new Date(event.start),
+						end: new Date(event.end),
+					}));
+					setEvents(formattedEvents);
 				}
 			} catch (error) {
 				console.error("Error fetching calendar events:", error);
