@@ -89,6 +89,7 @@ export async function GET(request: NextRequest) {
 		}
 
 		const calendarData = await calendarResponse.json();
+		console.log(calendarData);
 
 		// Transform Google Calendar events to our format
 		const events =

@@ -25,7 +25,7 @@ export default function GoogleAuthModal({
 	useEffect(() => {
 		const checkAccessToken = async () => {
 			try {
-				const response = await fetch("/api/auth/check-token");
+				const response = await fetch("/api/user/check-token");
 
 				if (response.ok) {
 					const { hasToken, needsRefresh, needsReauth } = await response.json();

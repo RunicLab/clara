@@ -1,5 +1,10 @@
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db"; // Your Prisma client
+import {
+	hasValidScopes,
+	REQUIRED_SCOPES,
+	validateTokenScopes,
+} from "@/lib/google";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
@@ -25,19 +30,20 @@ export async function GET(request: NextRequest) {
 			},
 		});
 
-		console.log(account);
+		// Token is valid only if: exists, not expired, and has proper scopes
+		let hasToken = false;
 
-		const hasValidToken =
+		if (
 			account?.accessToken &&
 			account.accessTokenExpiresAt &&
-			new Date() < account.accessTokenExpiresAt;
-
-		console.log("Has valid token:", hasValidToken);
+			new Date() < account.accessTokenExpiresAt
+		) {
+			hasToken = await hasValidScopes(account.accessToken);
+		}
 
 		return NextResponse.json({
-			hasToken: !!hasValidToken,
-			needsRefresh:
-				account?.accessToken && !hasValidToken && !!account.refreshToken,
+			hasToken,
+			needsRefresh: !hasToken && !!account?.refreshToken,
 		});
 	} catch (error) {
 		console.error("Error checking access token:", error);

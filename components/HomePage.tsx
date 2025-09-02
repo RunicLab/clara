@@ -70,6 +70,22 @@ export default function HomePage() {
 		}
 	}, [messages]);
 
+	useEffect(() => {
+		const getCalendarEvents = async () => {
+			try {
+				const response = await fetch("/api/calendar/events");
+				const data = await response.json();
+				if (response.ok && data.events.length > 0) {
+					setEvents(data.events);
+				}
+			} catch (error) {
+				console.error("Error fetching calendar events:", error);
+			}
+		};
+
+		getCalendarEvents();
+	}, []);
+
 	const handleSendMessage = () => {
 		if (!inputValue.trim()) return;
 
