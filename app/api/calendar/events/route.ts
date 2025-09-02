@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { refreshGoogleToken } from "@/lib/google";
+import { CalendarEvent, GoogleCalendarEvent } from "@/types/events";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
@@ -89,19 +90,23 @@ export async function GET(request: NextRequest) {
 		}
 
 		const calendarData = await calendarResponse.json();
-		console.log(calendarData);
+		//console.log(calendarData);
 
 		// Transform Google Calendar events to our format
 		const events =
-			calendarData.items?.map((event: any) => ({
-				id: event.id,
-				title: event.summary || "Untitled Event",
-				start: new Date(event.start?.dateTime || event.start?.date),
-				end: new Date(event.end?.dateTime || event.end?.date),
-				description: event.description,
-				location: event.location,
-				isAllDay: !event.start?.dateTime, // If no time, it's an all-day event
-			})) || [];
+			calendarData.items?.map(
+				(event: GoogleCalendarEvent) =>
+					({
+						id: event.id,
+						title: event.summary || "Untitled Event",
+						start: new Date(event.start?.dateTime! || event.start?.date!),
+						end: new Date(event.end?.dateTime! || event.end?.date!),
+						description: event.description,
+						location: event.location,
+						isAllDay: !event.start?.dateTime, // If no time, it's an all-day event
+						attendees: event.attendees,
+					}) as CalendarEvent,
+			) || [];
 
 		return NextResponse.json({ events });
 	} catch (error) {

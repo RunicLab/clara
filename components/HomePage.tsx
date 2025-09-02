@@ -10,6 +10,7 @@ import "react-big-calendar/lib/css/react-big-calendar.css";
 import { format, parse, startOfWeek, getDay } from "date-fns";
 import { enUS } from "date-fns/locale";
 import { useRef, useEffect } from "react";
+import { CalendarEvent } from "@/types/events";
 
 const locales = {
 	"en-US": enUS,
@@ -24,26 +25,7 @@ const localizer = dateFnsLocalizer({
 });
 
 // Sample events data
-const initialEvents = [
-	{
-		id: 1,
-		title: "Team Meeting",
-		start: new Date(2025, 8, 3, 10, 0), // September 3, 2025, 10:00 AM
-		end: new Date(2025, 8, 3, 11, 0), // September 3, 2025, 11:00 AM
-	},
-	{
-		id: 2,
-		title: "Project Review",
-		start: new Date(2025, 8, 5, 14, 0), // September 5, 2025, 2:00 PM
-		end: new Date(2025, 8, 5, 15, 30), // September 5, 2025, 3:30 PM
-	},
-	{
-		id: 3,
-		title: "Client Call",
-		start: new Date(2025, 8, 8, 9, 0), // September 8, 2025, 9:00 AM
-		end: new Date(2025, 8, 8, 10, 0), // September 8, 2025, 10:00 AM
-	},
-];
+const initialEvents: CalendarEvent[] = [];
 
 export default function HomePage() {
 	const [events, setEvents] = useState(initialEvents);
