@@ -82,7 +82,10 @@ export async function executeClaraFunction(
 			const getResponse = await fetch(
 				`${baseUrl}/api/calendar/events?${getParams}`,
 				{
-					headers: request.headers,
+					headers: {
+						Authorization: request.headers.get("Authorization") || "",
+						Cookie: request.headers.get("Cookie") || "",
+					},
 				},
 			);
 			return await getResponse.json();
