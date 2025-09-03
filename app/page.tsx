@@ -14,9 +14,9 @@ export default async function Home() {
 	}
 
 	return (
-		<>
+		<main className="flex min-h-screen max-h-screen p-10 ">
 			<GoogleAuthModal />
 			<HomePage />;
-		</>
+		</main>
 	);
 }
