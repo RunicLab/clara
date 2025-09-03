@@ -75,42 +75,33 @@ export async function executeClaraFunction(
 
 	switch (functionName) {
 		case "get_calendar_events":
-			const getParams = new URLSearchParams();
-			if (parameters.timeMin) getParams.set("timeMin", parameters.timeMin);
-			if (parameters.timeMax) getParams.set("timeMax", parameters.timeMax);
-
-			const getResponse = await fetch(
-				`${baseUrl}/api/calendar/events?${getParams}`,
-				{
-					headers: {
-						Authorization: request.headers.get("Authorization") || "",
-						Cookie: request.headers.get("Cookie") || "",
-					},
-				},
-			);
-			return await getResponse.json();
+			const { GET } = await import("@/app/api/calendar/events/route");
+			const getResult = await GET(request);
+			return await getResult.json();
 
 		case "create_calendar_event":
-			const createResponse = await fetch(`${baseUrl}/api/calendar/events`, {
+			// Import and call your POST function directly
+			const { POST } = await import("@/app/api/calendar/events/route");
+			const postRequest = new NextRequest(request.url, {
 				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-					Authorization: request.headers.get("Authorization") || "",
-					Cookie: request.headers.get("Cookie") || "",
-				},
+				headers: request.headers,
 				body: JSON.stringify(parameters),
 			});
-			return await createResponse.json();
+			const postResult = await POST(postRequest);
+			return await postResult.json();
 
 		case "delete_calendar_event":
-			const deleteResponse = await fetch(
-				`${baseUrl}/api/calendar/events?eventId=${parameters.eventId}`,
+			// Import and call your DELETE function directly
+			const { DELETE } = await import("@/app/api/calendar/events/route");
+			const deleteRequest = new NextRequest(
+				`${request.url}?eventId=${parameters.eventId}`,
 				{
 					method: "DELETE",
 					headers: request.headers,
 				},
 			);
-			return await deleteResponse.json();
+			const deleteResult = await DELETE(deleteRequest);
+			return await deleteResult.json();
 
 		default:
 			throw new Error(`Unknown function: ${functionName}`);
