@@ -27,9 +27,16 @@ const localizer = dateFnsLocalizer({
 // Sample events data
 const initialEvents: CalendarEvent[] = [];
 
+interface Message {
+	id: number;
+	text: string;
+	sender: "user" | "ai" | "system";
+	isLoading?: boolean;
+}
+
 export default function HomePage() {
 	const [events, setEvents] = useState(initialEvents);
-	const [messages, setMessages] = useState([
+	const [messages, setMessages] = useState<Message[]>([
 		{
 			id: 1,
 			text: "Hello! I'm your AI assistant. I can help you manage your calendar, schedule events, or answer any questions you have.",
@@ -38,6 +45,8 @@ export default function HomePage() {
 	]);
 	const [inputValue, setInputValue] = useState("");
 	const [selectedEvent, setSelectedEvent] = useState(null);
+	const [isLoading, setIsLoading] = useState(false);
+	const [conversationHistory, setConversationHistory] = useState<Message[]>([]);
 	const scrollAreaRef = useRef<any>(null);
 
 	// Auto-scroll to bottom when messages change
@@ -52,82 +61,122 @@ export default function HomePage() {
 		}
 	}, [messages]);
 
-	useEffect(() => {
-		const getCalendarEvents = async () => {
-			try {
-				const response = await fetch("/api/calendar/events");
-				const data = await response.json();
-				if (response.ok && data.events.length > 0) {
-					const formattedEvents = data.events.map((event: any) => ({
-						...event,
-						start: new Date(event.start),
-						end: new Date(event.end),
-					}));
-					setEvents(formattedEvents);
-				}
-			} catch (error) {
-				console.error("Error fetching calendar events:", error);
+	const fetchCalendarEvents = async () => {
+		try {
+			const response = await fetch("/api/calendar/events");
+			const data = await response.json();
+			if (response.ok && data.events) {
+				const formattedEvents = data.events.map((event: any) => ({
+					...event,
+					start: new Date(event.start),
+					end: new Date(event.end),
+				}));
+				setEvents(formattedEvents);
 			}
-		};
+		} catch (error) {
+			console.error("Error fetching calendar events:", error);
+		}
+	};
 
-		getCalendarEvents();
+	useEffect(() => {
+		fetchCalendarEvents();
 	}, []);
 
-	const handleSendMessage = () => {
-		if (!inputValue.trim()) return;
+	const handleSendMessage = async () => {
+		if (!inputValue.trim() || isLoading) return;
 
-		const newMessage = {
-			id: messages.length + 1,
+		const userMessage: Message = {
+			id: Date.now(),
 			text: inputValue,
 			sender: "user",
 		};
 
-		setMessages((prev) => [...prev, newMessage]);
+		// Add user message immediately
+		setMessages((prev) => [...prev, userMessage]);
+		setConversationHistory((prev) => [...prev, userMessage]);
 
-		// Simulate AI response
-		setTimeout(() => {
-			let aiResponse = "I understand you want to ";
+		// Add loading message
+		const loadingMessage: Message = {
+			id: Date.now() + 1,
+			text: "Clara is thinking...",
+			sender: "ai",
+			isLoading: true,
+		};
+		setMessages((prev) => [...prev, loadingMessage]);
 
-			if (
-				inputValue.toLowerCase().includes("schedule") ||
-				inputValue.toLowerCase().includes("meeting")
-			) {
-				aiResponse =
-					"I can help you schedule a meeting. What date and time would work best for you?";
-			} else if (inputValue.toLowerCase().includes("calendar")) {
-				aiResponse = `You currently have ${events.length} events in your calendar. Would you like me to show you more details about any of them?`;
-			} else if (
-				inputValue.toLowerCase().includes("delete") ||
-				inputValue.toLowerCase().includes("remove")
-			) {
-				aiResponse =
-					"I can help you remove events from your calendar. Which event would you like to delete?";
-			} else {
-				aiResponse = `I received your message: "${inputValue}". How can I help you with your calendar or scheduling needs?`;
-			}
-
-			const aiMessage = {
-				id: messages.length + 2,
-				text: aiResponse,
-				sender: "ai",
-			};
-
-			setMessages((prev) => [...prev, aiMessage]);
-		}, 1000);
-
+		const currentInput = inputValue;
 		setInputValue("");
+		setIsLoading(true);
+
+		try {
+			const response = await fetch("/api/chat", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					message: currentInput,
+					conversationHistory: conversationHistory,
+				}),
+			});
+
+			const data = await response.json();
+
+			// Remove loading message and add AI response
+			setMessages((prev) => {
+				const withoutLoading = prev.filter((msg) => !msg.isLoading);
+				const aiMessage: Message = {
+					id: Date.now() + 2,
+					text:
+						data.message ||
+						"I apologize, but I encountered an error processing your request.",
+					sender: "ai",
+				};
+				return [...withoutLoading, aiMessage];
+			});
+
+			// Update conversation history
+			setConversationHistory((prev) => [
+				...prev,
+				{
+					id: Date.now() + 2,
+					text: data.message || "Error occurred",
+					sender: "ai",
+				},
+			]);
+
+			// Refresh calendar events in case they were modified
+			await fetchCalendarEvents();
+		} catch (error) {
+			console.error("Error sending message:", error);
+
+			// Remove loading message and show error
+			setMessages((prev) => {
+				const withoutLoading = prev.filter((msg) => !msg.isLoading);
+				return [
+					...withoutLoading,
+					{
+						id: Date.now() + 3,
+						text: "Sorry, I'm having trouble connecting right now. Please try again.",
+						sender: "ai",
+					},
+				];
+			});
+		} finally {
+			setIsLoading(false);
+		}
 	};
 
 	const handleSelectEvent = (event: any) => {
 		setSelectedEvent(event);
 		const eventMessage = {
-			id: messages.length + 1,
+			id: Date.now(),
 			text: `Selected event: "${event.title}" on ${format(
 				event.start,
 				"PPpp",
 			)}`,
 			sender: "system",
-		};
+		} as Message;
 		setMessages((prev) => [...prev, eventMessage]);
 	};
 
