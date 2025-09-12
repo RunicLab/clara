@@ -5,18 +5,20 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 
 export default async function Home() {
-	const session = await auth.api.getSession({
-		headers: await headers(),
-	});
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
 
-	if (!session?.user) {
-		return <AuthPage />;
-	}
+  if (!session?.user) {
+    return <AuthPage />;
+  }
 
-	return (
-		<main className="flex min-h-screen max-h-screen p-10 ">
-			<GoogleAuthModal />
-			<HomePage />;
-		</main>
-	);
+  return (
+    <main className="h-screen overflow-hidden">
+      <GoogleAuthModal />
+      <div className="h-full p-10">
+        <HomePage />
+      </div>
+    </main>
+  );
 }
