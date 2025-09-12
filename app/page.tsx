@@ -16,7 +16,7 @@ export default async function Home() {
   return (
     <main className="h-screen overflow-hidden">
       <GoogleAuthModal />
-      <div className="h-full p-10">
+      <div className="h-full p-2 sm:p-4 md:p-6 lg:p-10">
         <HomePage />
       </div>
     </main>

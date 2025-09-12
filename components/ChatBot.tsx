@@ -147,25 +147,26 @@ export default function ChatBot({
   };
 
   return (
-    <Card className="h-full shadow-lg border border-gray-100 rounded-2xl flex flex-col min-h-0 !py-0 !pb-3.5 !gap-0 bg-white">
-      <CardHeader className="flex-shrink-0 bg-gray-50/50 border-b border-gray-100 rounded-t-2xl !py-0">
-        <CardTitle className="flex items-center justify-between text-lg">
-          <div className="flex items-center gap-3 pt-2">
+    <Card className="h-full shadow-lg border border-gray-100 rounded-xl md:rounded-2xl flex flex-col min-h-0 !py-0 !pb-3.5 !gap-0 bg-white">
+      <CardHeader className="flex-shrink-0 bg-gray-50/50 border-b border-gray-100 rounded-t-xl md:rounded-t-2xl !py-0">
+        <CardTitle className="flex items-center justify-between text-sm md:text-lg">
+          <div className="flex items-center gap-2 md:gap-3 pt-2">
             <BotIcon />
             <div>
               <div
-                className="font-bold text-gray-800"
+                className="font-bold text-gray-800 text-sm md:text-base"
                 style={{ fontFamily: "Roboto" }}
               >
                 Clara
               </div>
               <div className="flex items-center gap-1 text-xs text-gray-600">
                 <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                Online
+                <span className="hidden sm:inline">Online</span>
+                <span className="sm:hidden">●</span>
               </div>
             </div>
           </div>
-          {/* <Minimize2 className="h-5 w-5" /> */}
+          {/* <Minimize2 className="h-4 w-4 md:h-5 md:w-5" /> */}
         </CardTitle>
       </CardHeader>
 
@@ -173,7 +174,7 @@ export default function ChatBot({
         {/* Messages Area - Scrollable */}
         <div className="flex-1 min-h-0 overflow-hidden bg-white">
           <ScrollArea ref={scrollAreaRef} className="h-full">
-            <div className="p-4 space-y-3">
+            <div className="p-2 sm:p-4 space-y-2 sm:space-y-3">
               {messages.map((message) => (
                 <div
                   key={message.id}
@@ -182,7 +183,7 @@ export default function ChatBot({
                   }`}
                 >
                   <div
-                    className={`max-w-[85%] p-3 rounded-lg text-sm break-words shadow-sm relative ${
+                    className={`max-w-[90%] sm:max-w-[85%] p-2 sm:p-3 rounded-lg text-xs sm:text-sm break-words shadow-sm relative ${
                       message.sender === "user"
                         ? "bg-gray-50 border border-gray-200 text-gray-800 rounded-br-sm"
                         : message.sender === "system"
@@ -200,25 +201,25 @@ export default function ChatBot({
         </div>
 
         {/* Floating Input Area */}
-        <div className="flex-shrink-0 px-4 pt-4 bg-white border-t border-gray-100">
+        <div className="flex-shrink-0 px-2 sm:px-4 pt-2 sm:pt-4 bg-white border-t border-gray-100">
           {/* Input Area */}
-          <div className="flex space-x-2">
+          <div className="flex space-x-1 sm:space-x-2">
             <Input
               placeholder="Ask clara about your calendar..."
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyPress={handleKeyPress}
               disabled={isLoading}
-              className="flex-1 text-sm rounded-2xl border-gray-200 focus:border-blue-500 focus:ring-blue-500 bg-gray-50 placeholder:text-gray-500"
+              className="flex-1 text-xs sm:text-sm rounded-xl sm:rounded-2xl border-gray-200 focus:border-blue-500 focus:ring-blue-500 bg-gray-50 placeholder:text-gray-500 h-8 sm:h-9"
               style={{ fontFamily: "Roboto" }}
             />
             <Button
               onClick={handleSendMessage}
               disabled={isLoading || !inputValue.trim()}
               size="icon"
-              className="bg-blue-500 hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed rounded-2xl flex-shrink-0 shadow-sm"
+              className="bg-blue-500 hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl sm:rounded-2xl flex-shrink-0 shadow-sm h-8 w-8 sm:h-9 sm:w-9"
             >
-              <Send className="h-4 w-4" />
+              <Send className="h-3 w-3 sm:h-4 sm:w-4" />
             </Button>
           </div>
         </div>

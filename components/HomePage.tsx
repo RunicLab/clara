@@ -63,10 +63,10 @@ function HomePageContent() {
     <div className="bg-transparent h-full flex flex-col">
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Main Layout */}
-        <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 min-h-0 h-full">
-          {/* Calendar Section - Left Side (2/3 width) */}
-          <div className="lg:col-span-2 flex flex-col min-h-0 h-full">
-            <div className="flex-1 p-4 min-h-0 h-full">
+        <div className="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-4 lg:gap-2 xl:gap-6 min-h-0 h-full">
+          {/* Calendar Section - Left Side (2/3 width on desktop, full width on mobile/tablet) */}
+          <div className="md:col-span-2 lg:col-span-2 flex flex-col min-h-0 h-full">
+            <div className="flex-1 p-2 md:p-4 min-h-0 h-full">
               <div className="h-full w-full">
                 <CustomCalendar
                   events={events}
@@ -77,8 +77,8 @@ function HomePageContent() {
             </div>
           </div>
 
-          {/* Chat Section - Right Side (1/3 width) */}
-          <div className="lg:col-span-1 flex flex-col min-h-0 h-full p-4">
+          {/* Chat Section - Right Side (1/3 width on desktop, full width on mobile/tablet) */}
+          <div className="md:col-span-2 lg:col-span-1 flex flex-col min-h-0 h-full p-2 md:p-4">
             <div className="h-full w-full">
               <ChatBot
                 onSendMessage={handleSendMessage}

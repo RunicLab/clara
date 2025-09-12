@@ -100,6 +100,18 @@ export default function CustomCalendar({
 }: CustomCalendarProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [view, setView] = useState<"Week" | "Month" | "Day">("Week");
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Check if mobile on mount and resize
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 640);
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   // Get week dates
   const getWeekDates = (date: Date) => {
@@ -198,6 +210,13 @@ export default function CustomCalendar({
     // Keep the same currentDate - just change how we view it
   };
 
+  // Auto-switch to Day view on mobile for better UX
+  useEffect(() => {
+    if (isMobile && view === "Week") {
+      setView("Day");
+    }
+  }, [isMobile, view]);
+
   // Go to today - like Google Calendar
   const goToToday = () => {
     setCurrentDate(new Date());
@@ -295,13 +314,14 @@ export default function CustomCalendar({
         {daysOfWeek.map((day) => (
           <div
             key={day}
-            className="h-12 border-r border-gray-100 last:border-r-0 flex items-center justify-center"
+            className="h-8 sm:h-12 border-r border-gray-100 last:border-r-0 flex items-center justify-center"
           >
             <span
-              className="text-sm font-bold text-gray-600"
+              className="text-xs sm:text-sm font-bold text-gray-600"
               style={{ fontFamily: "Roboto" }}
             >
-              {day}
+              <span className="hidden sm:inline">{day}</span>
+              <span className="sm:hidden">{day.slice(0, 3)}</span>
             </span>
           </div>
         ))}
@@ -317,12 +337,12 @@ export default function CustomCalendar({
           return (
             <div
               key={index}
-              className={`border-r border-b border-gray-100 last:border-r-0 p-2 flex flex-col ${
+              className={`border-r border-b border-gray-100 last:border-r-0 p-1 sm:p-2 flex flex-col ${
                 isCurrentMonth ? "bg-white" : "bg-gray-50/50"
               }`}
             >
               <span
-                className={`text-sm font-bold mb-1 flex-shrink-0 ${
+                className={`text-xs sm:text-sm font-bold mb-1 flex-shrink-0 ${
                   isCurrentMonth ? "text-gray-900" : "text-gray-400"
                 } ${isToday ? "text-white" : ""}`}
                 style={{
@@ -331,12 +351,13 @@ export default function CustomCalendar({
                     background:
                       "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
                     borderRadius: "50%",
-                    width: "24px",
-                    height: "24px",
+                    width: "20px",
+                    height: "20px",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                     margin: "0 auto",
+                    fontSize: "10px",
                   }),
                 }}
               >
@@ -344,14 +365,14 @@ export default function CustomCalendar({
               </span>
 
               {/* Events - takes remaining space */}
-              <div className="flex-1 space-y-1 min-h-0 overflow-hidden">
-                {dayEvents.slice(0, 4).map((event) => {
+              <div className="flex-1 space-y-0.5 sm:space-y-1 min-h-0 overflow-hidden">
+                {dayEvents.slice(0, isMobile ? 2 : 4).map((event) => {
                   const colorScheme = getEventColor(event);
                   return (
                     <div
                       key={event.id}
                       onClick={() => onSelectEvent?.(event)}
-                      className="cursor-pointer hover:opacity-80 transition-opacity rounded text-xs p-1 truncate"
+                      className="cursor-pointer hover:opacity-80 transition-opacity rounded text-xs p-0.5 sm:p-1 truncate"
                       style={{
                         background: colorScheme.bg,
                         border: `1px solid ${colorScheme.border}`,
@@ -362,9 +383,9 @@ export default function CustomCalendar({
                     </div>
                   );
                 })}
-                {dayEvents.length > 4 && (
+                {dayEvents.length > (isMobile ? 2 : 4) && (
                   <div className="text-xs text-gray-500">
-                    +{dayEvents.length - 4} more
+                    +{dayEvents.length - (isMobile ? 2 : 4)} more
                   </div>
                 )}
               </div>
@@ -382,20 +403,23 @@ export default function CustomCalendar({
       <div className="flex-shrink-0 border-b border-gray-200 bg-white">
         <div className="flex">
           {/* Empty space for time column */}
-          <div className="w-16 border-r border-gray-200 bg-gray-50"></div>
+          <div className="w-12 sm:w-16 border-r border-gray-200 bg-gray-50"></div>
 
           {/* Days header */}
           <div className="flex-1 grid grid-cols-7">
             {weekDates.map((date, index) => (
               <div
                 key={index}
-                className="h-12 border-r border-gray-200 last:border-r-0 flex flex-col items-center justify-center"
+                className="h-10 sm:h-12 border-r border-gray-200 last:border-r-0 flex flex-col items-center justify-center"
               >
                 <span
-                  className="text-sm font-medium text-gray-600"
+                  className="text-xs sm:text-sm font-medium text-gray-600"
                   style={{ fontFamily: "Roboto" }}
                 >
-                  {daysOfWeek[index]}
+                  <span className="hidden sm:inline">{daysOfWeek[index]}</span>
+                  <span className="sm:hidden">
+                    {daysOfWeek[index].slice(0, 3)}
+                  </span>
                 </span>
                 <span className="text-xs text-gray-500">{date.getDate()}</span>
               </div>
@@ -407,11 +431,11 @@ export default function CustomCalendar({
       {/* Scrollable Content */}
       <div className="flex-1 flex min-h-0 overflow-y-auto scrollbar-hide">
         {/* Time column - Fixed */}
-        <div className="w-16 flex-shrink-0">
+        <div className="w-12 sm:w-16 flex-shrink-0">
           {weekTimeSlots.map((time, index) => (
             <div
               key={time}
-              className="h-12 border-b border-r border-gray-100 bg-gray-50 flex items-center justify-center relative"
+              className="h-10 sm:h-12 border-b border-r border-gray-100 bg-gray-50 flex items-center justify-center relative"
             >
               <span
                 className="text-xs text-gray-500"
@@ -427,15 +451,17 @@ export default function CustomCalendar({
         <div className="flex-1 relative">
           <div
             className="absolute inset-0"
-            style={{ height: `${weekTimeSlots.length * 48}px` }}
+            style={{
+              height: `${weekTimeSlots.length * (isMobile ? 40 : 48)}px`,
+            }}
           >
             {/* Horizontal lines */}
-            {weekTimeSlots.map((_, index) => (
+            {weekTimeSlots.slice(0, -1).map((_, index) => (
               <div
                 key={index}
                 className="absolute left-0 right-0 h-px bg-gray-100"
                 style={{
-                  top: `${(index + 1) * 48}px`, // 48px per hour (h-12 = 48px)
+                  top: `${(index + 1) * (isMobile ? 40 : 48)}px`, // 40px on mobile, 48px on desktop
                 }}
               />
             ))}
@@ -467,12 +493,13 @@ export default function CustomCalendar({
               const startMinute = eventStart.getMinutes();
               const endMinute = eventEnd.getMinutes();
 
-              // Calculate position based on 48px per hour (starting from 1 AM)
+              // Calculate position based on responsive height per hour (starting from 1 AM)
+              const hourHeight = isMobile ? 40 : 48;
               const topPosition =
-                (startHour - 1) * 48 + (startMinute / 60) * 48;
+                (startHour - 1) * hourHeight + (startMinute / 60) * hourHeight;
               const height =
-                (endHour - startHour) * 48 +
-                ((endMinute - startMinute) / 60) * 48;
+                (endHour - startHour) * hourHeight +
+                ((endMinute - startMinute) / 60) * hourHeight;
 
               const colorScheme = getEventColor(event);
 
@@ -533,8 +560,10 @@ export default function CustomCalendar({
               // Only show if current day is in this week
               if (currentDayIndex === -1) return null;
 
+              const hourHeight = isMobile ? 40 : 48;
               const topPosition =
-                (currentHour - 1) * 48 + (currentMinute / 60) * 48;
+                (currentHour - 1) * hourHeight +
+                (currentMinute / 60) * hourHeight;
 
               return (
                 <div
@@ -563,22 +592,30 @@ export default function CustomCalendar({
       <div className="flex-shrink-0 border-b border-gray-200 bg-white">
         <div className="flex">
           {/* Empty space for time column */}
-          <div className="w-16 border-r border-gray-200 bg-gray-50"></div>
+          <div className="w-12 sm:w-16 border-r border-gray-200 bg-gray-50"></div>
 
           {/* Day header */}
           <div className="flex-1 flex items-center justify-center">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 sm:gap-2">
               <span
-                className="text-sm font-bold text-gray-600"
+                className="text-xs sm:text-sm font-bold text-gray-600"
                 style={{ fontFamily: "Roboto" }}
               >
-                {currentDate.toLocaleDateString("en-US", {
-                  weekday: "long",
-                  month: "long",
-                })}
+                <span className="hidden sm:inline">
+                  {currentDate.toLocaleDateString("en-US", {
+                    weekday: "long",
+                    month: "long",
+                  })}
+                </span>
+                <span className="sm:hidden">
+                  {currentDate.toLocaleDateString("en-US", {
+                    weekday: "short",
+                    month: "short",
+                  })}
+                </span>
               </span>
               <span
-                className={`text-sm font-bold ${
+                className={`text-xs sm:text-sm font-bold ${
                   currentDate.toDateString() === new Date().toDateString()
                     ? "text-white"
                     : "text-gray-600"
@@ -590,11 +627,12 @@ export default function CustomCalendar({
                     background:
                       "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
                     borderRadius: "50%",
-                    width: "24px",
-                    height: "24px",
+                    width: "20px",
+                    height: "20px",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
+                    fontSize: "10px",
                   }),
                 }}
               >
@@ -608,11 +646,11 @@ export default function CustomCalendar({
       {/* Scrollable Content */}
       <div className="flex-1 flex min-h-0 overflow-y-auto scrollbar-hide">
         {/* Time column - Scrollable */}
-        <div className="w-16 flex-shrink-0">
+        <div className="w-12 sm:w-16 flex-shrink-0">
           {dayTimeSlots.map((time, index) => (
             <div
               key={time}
-              className="h-12 border-b border-r border-gray-100 bg-gray-50 flex items-center justify-center relative"
+              className="h-10 sm:h-12 border-b border-r border-gray-100 bg-gray-50 flex items-center justify-center relative"
             >
               <span
                 className="text-xs text-gray-500"
@@ -628,14 +666,16 @@ export default function CustomCalendar({
         <div className="flex-1 relative">
           <div
             className="absolute inset-0"
-            style={{ height: `${dayTimeSlots.length * 48}px` }}
+            style={{
+              height: `${dayTimeSlots.length * (isMobile ? 40 : 48)}px`,
+            }}
           >
             {/* Horizontal lines */}
-            {dayTimeSlots.map((_, index) => (
+            {dayTimeSlots.slice(0, -1).map((_, index) => (
               <div
                 key={index}
                 className="absolute left-0 right-0 h-px bg-gray-100"
-                style={{ top: `${(index + 1) * 48}px` }}
+                style={{ top: `${(index + 1) * (isMobile ? 40 : 48)}px` }}
               />
             ))}
 
@@ -658,11 +698,13 @@ export default function CustomCalendar({
               const startMinute = eventStart.getMinutes();
               const endMinute = eventEnd.getMinutes();
 
-              // Calculate position based on 48px per hour (starting from 12 AM)
-              const topPosition = startHour * 48 + (startMinute / 60) * 48;
+              // Calculate position based on responsive height per hour (starting from 12 AM)
+              const hourHeight = isMobile ? 40 : 48;
+              const topPosition =
+                startHour * hourHeight + (startMinute / 60) * hourHeight;
               const height =
-                (endHour - startHour) * 48 +
-                ((endMinute - startMinute) / 60) * 48;
+                (endHour - startHour) * hourHeight +
+                ((endMinute - startMinute) / 60) * hourHeight;
 
               const colorScheme = getEventColor(event);
 
@@ -716,7 +758,9 @@ export default function CustomCalendar({
               if (currentDate.toDateString() !== now.toDateString())
                 return null;
 
-              const topPosition = currentHour * 48 + (currentMinute / 60) * 48;
+              const hourHeight = isMobile ? 40 : 48;
+              const topPosition =
+                currentHour * hourHeight + (currentMinute / 60) * hourHeight;
 
               return (
                 <div
@@ -735,30 +779,30 @@ export default function CustomCalendar({
   );
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden h-full flex flex-col">
+    <div className="bg-white rounded-xl md:rounded-2xl shadow-lg border border-gray-100 overflow-hidden h-full flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between p-6 border-b border-gray-100 bg-gray-50/50">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 md:p-6 border-b border-gray-100 bg-gray-50/50 gap-3 sm:gap-4 flex-wrap">
         {/* Left side - Today button and navigation */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4">
           <button
             onClick={goToToday}
-            className="px-4 py-2 text-sm font-black text-gray-600 bg-white border-2 border-gray-100 rounded-2xl hover:bg-gray-50 transition-colors shadow-sm"
+            className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-black text-gray-600 bg-white border-2 border-gray-100 rounded-xl sm:rounded-2xl hover:bg-gray-50 transition-colors shadow-sm"
             style={{ fontFamily: "Roboto" }}
           >
             Today
           </button>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1 sm:gap-3">
             <button
               onClick={() => navigateDate("prev")}
-              className="w-10 h-10 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors flex items-center justify-center"
+              className="w-8 h-8 sm:w-10 sm:h-10 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors flex items-center justify-center"
               title={`Previous ${getNavigationLabel()}`}
             >
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft className="h-3 w-3 sm:h-4 sm:w-4" />
             </button>
 
             <span
-              className="text-sm font-bold text-gray-600 min-w-[120px] text-center cursor-pointer hover:text-gray-800 transition-colors"
+              className="text-xs sm:text-sm font-bold text-gray-600 min-w-[80px] sm:min-w-[120px] text-center cursor-pointer hover:text-gray-800 transition-colors truncate"
               style={{ fontFamily: "Roboto" }}
               title="Click to go to today"
               onClick={goToToday}
@@ -768,23 +812,23 @@ export default function CustomCalendar({
 
             <button
               onClick={() => navigateDate("next")}
-              className="w-10 h-10 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors flex items-center justify-center"
+              className="w-8 h-8 sm:w-10 sm:h-10 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors flex items-center justify-center"
               title={`Next ${getNavigationLabel()}`}
             >
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />
             </button>
           </div>
         </div>
 
         {/* Right side - View toggles (Google Calendar style) */}
-        <div className="flex items-center overflow-hidden rounded-2xl shadow-sm">
+        <div className="flex items-center self-center sm:self-start overflow-hidden rounded-xl sm:rounded-2xl shadow-sm w-fit">
           {(["Week", "Month", "Day"] as const).map((viewOption, index) => (
             <button
               key={viewOption}
               onClick={() => handleViewChange(viewOption)}
-              className={`px-4 py-2 text-sm font-black transition-all duration-200 ${
-                index === 0 ? "rounded-l-2xl" : ""
-              } ${index === 2 ? "rounded-r-2xl" : ""} ${
+              className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-black transition-all duration-200 ${
+                index === 0 ? "rounded-l-xl sm:rounded-l-2xl" : ""
+              } ${index === 2 ? "rounded-r-xl sm:rounded-r-2xl" : ""} ${
                 view === viewOption
                   ? "bg-blue-100 text-blue-700 border border-blue-200"
                   : "bg-white text-gray-500 hover:text-gray-700 hover:bg-gray-50 border border-transparent"
