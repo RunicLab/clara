@@ -153,14 +153,11 @@ export default function ChatBot({
           <div className="flex items-center gap-2 md:gap-3 pt-2">
             <BotIcon />
             <div>
-              <div
-                className="font-bold text-gray-800 text-sm md:text-base"
-                style={{ fontFamily: "Roboto" }}
-              >
+              <div className="font-bold text-gray-800 text-sm md:text-base">
                 Clara
               </div>
               <div className="flex items-center gap-1 text-xs text-gray-600">
-                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                 <span className="hidden sm:inline">Online</span>
                 <span className="sm:hidden">●</span>
               </div>
@@ -190,7 +187,6 @@ export default function ChatBot({
                         ? "bg-blue-100 border border-blue-200 text-blue-800 rounded-bl-sm"
                         : "bg-blue-100 border border-blue-200 text-blue-800 rounded-bl-sm"
                     }`}
-                    style={{ fontFamily: "Roboto" }}
                   >
                     {message.text}
                   </div>
@@ -211,7 +207,6 @@ export default function ChatBot({
               onKeyPress={handleKeyPress}
               disabled={isLoading}
               className="flex-1 text-xs sm:text-sm rounded-xl sm:rounded-2xl border-gray-200 focus:border-blue-500 focus:ring-blue-500 bg-gray-50 placeholder:text-gray-500 h-8 sm:h-9"
-              style={{ fontFamily: "Roboto" }}
             />
             <Button
               onClick={handleSendMessage}
